@@ -1,0 +1,6 @@
+{
+  "name": "CerrajeríaIA – Aula Virtual",
+  "description": "Aplicación web de cerrajería con cursos, panel de instructor escolar y ejercicios prácticos en un entorno PWA oscuro y dorado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
