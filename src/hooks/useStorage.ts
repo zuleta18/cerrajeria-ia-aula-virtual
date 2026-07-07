@@ -38,7 +38,7 @@ export function useStorage() {
         id: email.toLowerCase(),
         email: email.toLowerCase(),
         name,
-        role: email.toLowerCase() === 'edinsonzuleta93@gmail.com' ? 'instructor' : 'student',
+        role: email.toLowerCase() === (import.meta.env.VITE_INSTRUCTOR_EMAIL || '').toLowerCase() ? 'instructor' : 'student',
         progress: []
       };
       existingUsers.push(user);

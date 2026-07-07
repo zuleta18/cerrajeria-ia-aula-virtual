@@ -51,9 +51,6 @@ export function Login({ onLogin }: LoginProps) {
               className="w-full bg-black border border-dark-600 px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors text-xs"
               placeholder="tu@correo.com"
             />
-            <p className="text-[10px] text-gray-500 mt-2 tracking-wide uppercase">
-              Usa <span className="text-gold-500">edinsonzuleta93@gmail.com</span> para ver el panel
-            </p>
           </div>
           <button
             type="submit"
