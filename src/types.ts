@@ -34,4 +34,6 @@ export interface CourseUnit {
   title: string;
   description: string;
   blocks: UnitBlock[];
+  driveLink?: string;
+  youtubeLink?: string;
 }

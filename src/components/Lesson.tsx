@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CourseUnit, User } from '../types';
-import { ArrowLeft, CheckCircle2, ChevronRight, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronRight, AlertCircle, FileText, Youtube, RefreshCcw } from 'lucide-react';
 
 interface LessonProps {
   unit: CourseUnit;
@@ -26,17 +26,20 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
     if (!quizBlock?.questions) return;
     setShowResults(true);
 
-    const allCorrect = quizBlock.questions.every(
+    const correctCount = quizBlock.questions.filter(
       (q, idx) => answers[idx] === q.correctAnswerIndex
-    );
+    ).length;
 
-    if (allCorrect && !isAlreadyCompleted) {
+    const passThreshold = Math.ceil(quizBlock.questions.length * 0.7);
+
+    if (correctCount >= passThreshold && !isAlreadyCompleted) {
       onComplete(unit.id);
     }
   };
 
   const allAnswered = quizBlock?.questions ? Object.keys(answers).length === quizBlock.questions.length : false;
-  const isPerfectScore = quizBlock?.questions?.every((q, idx) => answers[idx] === q.correctAnswerIndex);
+  const correctCount = quizBlock?.questions ? quizBlock.questions.filter((q, idx) => answers[idx] === q.correctAnswerIndex).length : 0;
+  const isPassing = quizBlock?.questions ? correctCount >= Math.ceil(quizBlock.questions.length * 0.7) : false;
 
   return (
     <div className="min-h-screen flex flex-col h-screen bg-black">
@@ -56,6 +59,20 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
       <div className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="mb-6 border-l border-gold-500 pl-4">
           <p className="text-sm text-gray-400 italic max-w-3xl">{unit.description}</p>
+          {(unit.driveLink || unit.youtubeLink) && (
+            <div className="flex flex-wrap gap-4 mt-4">
+              {unit.driveLink && (
+                <a href={unit.driveLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-gold-500 hover:text-white transition-colors border border-gold-500/30 px-3 py-2">
+                  <FileText className="w-4 h-4" /> Material del Ebook
+                </a>
+              )}
+              {unit.youtubeLink && (
+                <a href={unit.youtubeLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-red-500 hover:text-white transition-colors border border-red-500/30 px-3 py-2">
+                  <Youtube className="w-4 h-4" /> Ver Clase en YouTube
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -136,15 +153,33 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
                   </button>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-bold uppercase tracking-widest ${isPerfectScore ? 'text-green-500' : 'text-red-500'}`}>
-                      {isPerfectScore ? 'Módulo Completado Exitosamente' : 'Errores en la evaluación'}
-                    </span>
-                    <button
-                      onClick={onBack}
-                      className="px-10 py-3 border border-gold-500 text-gold-500 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-gold-500 hover:text-black transition-all"
-                    >
-                      Volver al temario
-                    </button>
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-bold uppercase tracking-widest ${isPassing ? 'text-green-500' : 'text-red-500'}`}>
+                        {isPassing ? 'Módulo Completado Exitosamente' : 'No aprobado'}
+                      </span>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
+                        Puntaje: {correctCount} / {quizBlock.questions.length} (Mínimo {Math.ceil(quizBlock.questions.length * 0.7)})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {!isPassing && (
+                        <button
+                          onClick={() => {
+                            setShowResults(false);
+                            setAnswers({});
+                          }}
+                          className="px-6 py-3 border border-white/20 text-gray-400 hover:text-white font-bold uppercase text-[10px] tracking-[0.2em] transition-all flex items-center gap-2"
+                        >
+                          <RefreshCcw className="w-4 h-4" /> Reintentar
+                        </button>
+                      )}
+                      <button
+                        onClick={onBack}
+                        className="px-10 py-3 border border-gold-500 text-gold-500 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-gold-500 hover:text-black transition-all"
+                      >
+                        Volver al temario
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
