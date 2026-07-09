@@ -1,24 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from '../types';
 import { courseData } from '../data/courseData';
-import { LogOut, Users, Search, AppWindow } from 'lucide-react';
+import { LogOut, Users, Search, AppWindow, CheckCircle, FileText } from 'lucide-react';
+import { useEvidencia } from '../hooks/useEvidencia';
+import { PanelEvidencias } from './PanelEvidencias';
 
 interface InstructorDashboardProps {
   users: User[];
   onLogout: () => void;
   onSwitchView?: () => void;
+  updateUser?: (user: User) => void;
 }
 
-export function InstructorDashboard({ users, onLogout, onSwitchView }: InstructorDashboardProps) {
+export function InstructorDashboard({ users, onLogout, onSwitchView, updateUser }: InstructorDashboardProps) {
   const students = users.filter(u => u.role === 'student');
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'alumnos' | 'evidencias'>('alumnos');
+
+  const { evidencias, updateEvidenciaStatus } = useEvidencia();
+
+  const handleApprove = (evidenciaId: string, userId: string, unitId: string) => {
+    updateEvidenciaStatus(evidenciaId, 'approved');
+    if (updateUser) {
+      const userToUpdate = users.find(u => u.id === userId);
+      if (userToUpdate && !userToUpdate.progress.includes(unitId)) {
+        updateUser({
+          ...userToUpdate,
+          progress: [...userToUpdate.progress, unitId]
+        });
+      }
+    }
+  };
+
+  const handleReject = (evidenciaId: string) => {
+    updateEvidenciaStatus(evidenciaId, 'rejected');
+  };
 
   const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     s.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  
   const totalUnits = courseData.length;
+  const pendingEvidenciasCount = evidencias.filter(e => e.status === 'pending').length;
 
   return (
     <div className="min-h-screen bg-black pb-20">
@@ -48,91 +72,126 @@ export function InstructorDashboard({ users, onLogout, onSwitchView }: Instructo
       <main className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-dark-800 border border-gold-500/30 p-6 sticky top-28">
-            <h2 className="text-[10px] uppercase text-gold-500 font-bold mb-4 tracking-widest border-b border-dark-600 pb-2">Resumen</h2>
-            <div className="text-right">
-               <span className="font-serif italic text-gold-500 text-3xl font-bold">{students.length}</span>
-               <p className="text-[10px] uppercase text-gray-500 mt-1 font-bold">Alumnos Totales</p>
-            </div>
-            
-            <div className="relative w-full mt-6">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gold-500/50" />
+          <div className="bg-dark-800 border border-gold-500/30 p-6 sticky top-28 flex flex-col gap-4">
+            <button
+              onClick={() => setActiveTab('alumnos')}
+              className={`flex items-center justify-between w-full px-4 py-3 border transition-colors ${activeTab === 'alumnos' ? 'border-gold-500 text-gold-500 bg-gold-500/5' : 'border-dark-600 text-gray-400 hover:text-white'}`}
+            >
+              <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest">
+                <Users className="w-4 h-4" /> Alumnos
               </div>
-              <input
-                type="text"
-                placeholder="Buscar alumno..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 border border-dark-600 bg-black text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 text-xs transition-colors"
-              />
-            </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('evidencias')}
+              className={`flex items-center justify-between w-full px-4 py-3 border transition-colors ${activeTab === 'evidencias' ? 'border-gold-500 text-gold-500 bg-gold-500/5' : 'border-dark-600 text-gray-400 hover:text-white'}`}
+            >
+              <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest">
+                <FileText className="w-4 h-4" /> Evidencias
+              </div>
+              {pendingEvidenciasCount > 0 && (
+                <span className="bg-gold-500 text-black px-2 py-0.5 text-[10px] font-bold rounded-full">{pendingEvidenciasCount}</span>
+              )}
+            </button>
+
+            {activeTab === 'alumnos' && (
+              <div className="mt-6 border-t border-dark-600 pt-6">
+                <h2 className="text-[10px] uppercase text-gold-500 font-bold mb-4 tracking-widest">Resumen</h2>
+                <div className="text-right">
+                  <span className="font-serif italic text-gold-500 text-3xl font-bold">{students.length}</span>
+                  <p className="text-[10px] uppercase text-gray-500 mt-1 font-bold">Alumnos Totales</p>
+                </div>
+                
+                <div className="relative w-full mt-6">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gold-500/50" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Buscar alumno..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-3 py-3 border border-dark-600 bg-black text-white placeholder-gray-600 focus:outline-none focus:border-gold-500 text-xs transition-colors"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </aside>
 
-        <div className="flex-1 bg-dark-800 border border-gold-500/30 p-1">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left whitespace-nowrap">
-              <thead>
-                <tr className="bg-black/50 border-b border-gold-500/20">
-                  <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Alumno</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Perfil</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Progreso</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-dark-600">
-                {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student) => {
-                    const completed = student.progress?.length || 0;
-                    const pct = Math.round((completed / totalUnits) * 100);
-                    const hasOnboarding = !!student.onboardingData;
-
-                    return (
-                      <tr key={student.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-5">
-                          <div className="flex flex-col text-xs space-y-1">
-                            <span className="font-bold text-gold-500 tracking-wider uppercase">{student.name}</span>
-                            <span className="text-gray-500 text-[10px] uppercase">{student.email}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          {hasOnboarding ? (
-                            <div className="flex flex-col text-xs space-y-1">
-                              <span className="text-white font-serif italic">{student.onboardingData!.level}</span>
-                              <span className="text-gray-500 text-[10px] uppercase">Obj: {student.onboardingData!.goal}</span>
-                            </div>
-                          ) : (
-                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest border border-white/10 px-2 py-1">
-                              Pendiente Setup
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-serif font-bold text-gold-500">{pct}%</span>
-                            <div className="w-24 bg-gray-800 h-1 rounded-none overflow-hidden">
-                              <div 
-                                className="bg-gold-500 h-full" 
-                                style={{ width: `${pct}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div className="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">{completed} / {totalUnits} completados</div>
+        <div className="flex-1">
+          {activeTab === 'alumnos' ? (
+            <div className="bg-dark-800 border border-gold-500/30 p-1">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-black/50 border-b border-gold-500/20">
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Alumno</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Perfil</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Progreso</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-dark-600">
+                    {filteredStudents.length > 0 ? (
+                      filteredStudents.map((student) => {
+                        const completed = student.progress?.length || 0;
+                        const pct = Math.round((completed / totalUnits) * 100);
+                        const hasOnboarding = !!student.onboardingData;
+                        return (
+                          <tr key={student.id} className="hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-5">
+                              <div className="flex flex-col text-xs space-y-1">
+                                <span className="font-bold text-gold-500 tracking-wider uppercase">{student.name}</span>
+                                <span className="text-gray-500 text-[10px] uppercase">{student.email}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-5">
+                              {hasOnboarding ? (
+                                <div className="flex flex-col text-xs space-y-1">
+                                  <span className="text-white font-serif italic">{student.onboardingData!.level}</span>
+                                  <span className="text-gray-500 text-[10px] uppercase">Obj: {student.onboardingData!.goal}</span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest border border-white/10 px-2 py-1">
+                                  Pendiente Setup
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-serif font-bold text-gold-500">{pct}%</span>
+                                <div className="w-24 bg-gray-800 h-1 rounded-none overflow-hidden">
+                                  <div 
+                                    className="bg-gold-500 h-full" 
+                                    style={{ width: `${pct}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <div className="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">{completed} / {totalUnits} completados</div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={3} className="px-6 py-12 text-center text-gray-500 text-xs uppercase tracking-widest">
+                          <Users className="mx-auto h-8 w-8 text-dark-600 mb-3" />
+                          No se encontraron registros
                         </td>
                       </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="px-6 py-12 text-center text-gray-500 text-xs uppercase tracking-widest">
-                      <Users className="mx-auto h-8 w-8 text-dark-600 mb-3" />
-                      No se encontraron registros
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <PanelEvidencias 
+              evidencias={evidencias}
+              users={users}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          )}
         </div>
       </main>
     </div>

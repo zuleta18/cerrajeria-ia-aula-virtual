@@ -7,6 +7,15 @@ export interface OnboardingData {
   format: string;
 }
 
+export interface Evidencia {
+  id: string;
+  userId: string;
+  unitId: string;
+  fileUrl: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: number;
+}
+
 export interface User {
   id: string; // usually email for simple mock
   email: string;
@@ -14,6 +23,7 @@ export interface User {
   role: Role;
   onboardingData?: OnboardingData;
   progress: string[]; // array of completed unit IDs
+  evidencias?: Evidencia[];
 }
 
 export interface QuizQuestion {

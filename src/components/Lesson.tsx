@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CourseUnit, User } from '../types';
 import { ArrowLeft, CheckCircle2, ChevronRight, AlertCircle, FileText, Youtube, RefreshCcw } from 'lucide-react';
+import { useEvidencia } from '../hooks/useEvidencia';
+import { EvidenciaUploader } from './EvidenciaUploader';
 
 interface LessonProps {
   unit: CourseUnit;
@@ -13,33 +15,39 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
   const isAlreadyCompleted = user.progress.includes(unit.id);
   const quizBlock = unit.blocks.find(b => b.type === 'quiz');
   
+  // Evidencia state
+  const { getEvidenciaForUserAndUnit, addEvidencia } = useEvidencia();
+  const existingEvidencia = getEvidenciaForUserAndUnit(user.id, unit.id);
+  const hasPassedQuizPreviously = isAlreadyCompleted || existingEvidencia !== undefined;
+  
   // Quiz state
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(hasPassedQuizPreviously);
 
   const handleOptionSelect = (qIndex: number, optIndex: number) => {
-    if (showResults) return; // Prevent changing after submit
+    if (showResults || hasPassedQuizPreviously) return; // Prevent changing after submit
     setAnswers(prev => ({ ...prev, [qIndex]: optIndex }));
   };
 
   const handleQuizSubmit = () => {
     if (!quizBlock?.questions) return;
     setShowResults(true);
-
-    const correctCount = quizBlock.questions.filter(
-      (q, idx) => answers[idx] === q.correctAnswerIndex
-    ).length;
-
-    const passThreshold = Math.ceil(quizBlock.questions.length * 0.7);
-
-    if (correctCount >= passThreshold && !isAlreadyCompleted) {
-      onComplete(unit.id);
-    }
   };
 
   const allAnswered = quizBlock?.questions ? Object.keys(answers).length === quizBlock.questions.length : false;
   const correctCount = quizBlock?.questions ? quizBlock.questions.filter((q, idx) => answers[idx] === q.correctAnswerIndex).length : 0;
-  const isPassing = quizBlock?.questions ? correctCount >= Math.ceil(quizBlock.questions.length * 0.7) : false;
+  const isPassing = hasPassedQuizPreviously || (quizBlock?.questions ? correctCount >= Math.ceil(quizBlock.questions.length * 0.95) : false);
+
+  const handleEvidenceUploaded = (fileUrl: string) => {
+    addEvidencia({
+      id: Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      unitId: unit.id,
+      fileUrl,
+      status: 'pending',
+      submittedAt: Date.now()
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col h-screen bg-black">
@@ -152,34 +160,57 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
                     Evaluar <ChevronRight className="ml-2 w-4 h-4" />
                   </button>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className={`text-xs font-bold uppercase tracking-widest ${isPassing ? 'text-green-500' : 'text-red-500'}`}>
-                        {isPassing ? 'Módulo Completado Exitosamente' : 'No aprobado'}
-                      </span>
-                      <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
-                        Puntaje: {correctCount} / {quizBlock.questions.length} (Mínimo {Math.ceil(quizBlock.questions.length * 0.7)})
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {!isPassing && (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className={`text-xs font-bold uppercase tracking-widest ${isPassing ? 'text-green-500' : 'text-red-500'}`}>
+                          {isPassing ? 'Evaluación Teórica Aprobada' : 'No aprobado'}
+                        </span>
+                        {!hasPassedQuizPreviously && (
+                          <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
+                            Puntaje: {correctCount} / {quizBlock.questions.length} (Mínimo {Math.ceil(quizBlock.questions.length * 0.95)})
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {!isPassing && (
+                          <button
+                            onClick={() => {
+                              setShowResults(false);
+                              setAnswers({});
+                            }}
+                            className="px-6 py-3 border border-white/20 text-gray-400 hover:text-white font-bold uppercase text-[10px] tracking-[0.2em] transition-all flex items-center gap-2"
+                          >
+                            <RefreshCcw className="w-4 h-4" /> Reintentar
+                          </button>
+                        )}
                         <button
-                          onClick={() => {
-                            setShowResults(false);
-                            setAnswers({});
-                          }}
-                          className="px-6 py-3 border border-white/20 text-gray-400 hover:text-white font-bold uppercase text-[10px] tracking-[0.2em] transition-all flex items-center gap-2"
+                          onClick={onBack}
+                          className="px-10 py-3 border border-gold-500 text-gold-500 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-gold-500 hover:text-black transition-all"
                         >
-                          <RefreshCcw className="w-4 h-4" /> Reintentar
+                          Volver al temario
                         </button>
-                      )}
-                      <button
-                        onClick={onBack}
-                        className="px-10 py-3 border border-gold-500 text-gold-500 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-gold-500 hover:text-black transition-all"
-                      >
-                        Volver al temario
-                      </button>
+                      </div>
                     </div>
+                    
+                    {isPassing && !isAlreadyCompleted && (
+                      <div className="border-t border-gold-500/20 pt-6">
+                        <EvidenciaUploader 
+                          userId={user.id} 
+                          unitId={unit.id} 
+                          onUploaded={handleEvidenceUploaded}
+                          existingStatus={existingEvidencia?.status}
+                        />
+                      </div>
+                    )}
+                    
+                    {isAlreadyCompleted && (
+                      <div className="p-6 border border-green-500/30 bg-green-500/5 text-center mt-6">
+                        <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                        <h3 className="text-green-500 font-bold uppercase tracking-widest text-xs">Módulo Completado</h3>
+                        <p className="text-gray-400 text-[10px] mt-2">Has aprobado la evaluación teórica y tu evidencia práctica fue validada.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
