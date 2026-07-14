@@ -56,12 +56,21 @@ export default function App() {
       }
     };
 
+    const handleResetProgress = (unitId: string) => {
+      updateUser({
+        ...currentUser,
+        progress: currentUser.progress.filter(id => id !== unitId)
+      });
+      // Also, we might want to clear existing evidencia but let's just reset progress
+    };
+
     return (
       <Lesson 
         unit={unit} 
         user={currentUser} 
         onBack={() => setCurrentUnitId(null)}
         onComplete={handleLessonComplete}
+        onResetProgress={handleResetProgress}
       />
     );
   }

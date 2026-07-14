@@ -8,9 +8,10 @@ interface EvidenciaUploaderProps {
   unitId: string;
   onUploaded: (fileUrl: string) => void;
   existingStatus?: 'pending' | 'approved' | 'rejected';
+  existingRejectionReason?: string;
 }
 
-export function EvidenciaUploader({ userId, unitId, onUploaded, existingStatus }: EvidenciaUploaderProps) {
+export function EvidenciaUploader({ userId, unitId, onUploaded, existingStatus, existingRejectionReason }: EvidenciaUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +47,7 @@ export function EvidenciaUploader({ userId, unitId, onUploaded, existingStatus }
     return (
       <div className="p-6 border border-gold-500/30 bg-gold-500/5 text-center mt-6">
         <Loader2 className="w-8 h-8 text-gold-500 mx-auto mb-2 animate-spin" />
-        <h3 className="text-gold-500 font-bold uppercase tracking-widest text-xs">Evidencia en revisión</h3>
+        <h3 className="text-gold-500 font-bold uppercase tracking-widest text-xs">⏳ Evidencia enviada — esperando aprobación del instructor</h3>
         <p className="text-gray-400 text-[10px] mt-2">Tu evidencia está siendo revisada por el instructor. Podrás avanzar cuando sea aprobada.</p>
       </div>
     );
@@ -59,7 +60,12 @@ export function EvidenciaUploader({ userId, unitId, onUploaded, existingStatus }
       <p className="text-gray-400 text-[10px] mt-2 mb-4">Sube una foto o video corto de tu práctica completada (Máx 5MB).</p>
       
       {existingStatus === 'rejected' && (
-        <p className="text-red-500 text-[10px] mb-4 font-bold">Tu evidencia anterior fue rechazada. Por favor, intenta de nuevo.</p>
+        <div className="mb-4">
+          <p className="text-red-500 text-[10px] font-bold">Tu evidencia anterior fue rechazada. Por favor, intenta de nuevo.</p>
+          {existingRejectionReason && (
+            <p className="text-red-400 text-[10px] italic mt-1">Motivo: {existingRejectionReason}</p>
+          )}
+        </div>
       )}
 
       {error && <p className="text-red-500 text-[10px] mb-4">{error}</p>}

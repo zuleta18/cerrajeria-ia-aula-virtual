@@ -33,7 +33,10 @@ export function InstructorDashboard({ users, onLogout, onSwitchView, updateUser 
   };
 
   const handleReject = (evidenciaId: string) => {
-    updateEvidenciaStatus(evidenciaId, 'rejected');
+    const reason = window.prompt('Motivo de rechazo de la evidencia:');
+    if (reason !== null) {
+      updateEvidenciaStatus(evidenciaId, 'rejected', reason || 'No cumple con los requisitos');
+    }
   };
 
   const filteredStudents = students.filter(s => 

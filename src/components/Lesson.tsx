@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CourseUnit, User } from '../types';
 import { ArrowLeft, CheckCircle2, ChevronRight, AlertCircle, FileText, Youtube, RefreshCcw } from 'lucide-react';
 import { useEvidencia } from '../hooks/useEvidencia';
@@ -9,15 +9,18 @@ interface LessonProps {
   user: User;
   onBack: () => void;
   onComplete: (unitId: string) => void;
+  onResetProgress?: (unitId: string) => void;
 }
 
-export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
+export function Lesson({ unit, user, onBack, onComplete, onResetProgress }: LessonProps) {
   const isAlreadyCompleted = user.progress.includes(unit.id);
   const quizBlock = unit.blocks.find(b => b.type === 'quiz');
   
   // Evidencia state
-  const { getEvidenciaForUserAndUnit, addEvidencia } = useEvidencia();
+  const { getEvidenciaForUserAndUnit, addEvidencia, deleteEvidencia } = useEvidencia();
   const existingEvidencia = getEvidenciaForUserAndUnit(user.id, unit.id);
+  const evidenciaAprobada = existingEvidencia?.status === 'approved';
+  
   const hasPassedQuizPreviously = isAlreadyCompleted || existingEvidencia !== undefined;
   
   // Quiz state
@@ -37,6 +40,12 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
   const allAnswered = quizBlock?.questions ? Object.keys(answers).length === quizBlock.questions.length : false;
   const correctCount = quizBlock?.questions ? quizBlock.questions.filter((q, idx) => answers[idx] === q.correctAnswerIndex).length : 0;
   const isPassing = hasPassedQuizPreviously || (quizBlock?.questions ? correctCount === quizBlock.questions.length : false);
+
+  useEffect(() => {
+    if (isPassing && evidenciaAprobada && !isAlreadyCompleted) {
+      onComplete(unit.id);
+    }
+  }, [isPassing, evidenciaAprobada, isAlreadyCompleted, onComplete, unit.id]);
 
   const handleEvidenceUploaded = (fileUrl: string) => {
     addEvidencia({
@@ -193,22 +202,41 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
                       </div>
                     </div>
                     
-                    {isPassing && !isAlreadyCompleted && (
+                    {isPassing && !evidenciaAprobada && (
                       <div className="border-t border-gold-500/20 pt-6">
                         <EvidenciaUploader 
                           userId={user.id} 
                           unitId={unit.id} 
                           onUploaded={handleEvidenceUploaded}
                           existingStatus={existingEvidencia?.status}
+                          existingRejectionReason={existingEvidencia?.rejectionReason}
                         />
                       </div>
                     )}
                     
-                    {isAlreadyCompleted && (
+                    {isPassing && evidenciaAprobada && (
                       <div className="p-6 border border-green-500/30 bg-green-500/5 text-center mt-6">
                         <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
                         <h3 className="text-green-500 font-bold uppercase tracking-widest text-xs">Módulo Completado</h3>
                         <p className="text-gray-400 text-[10px] mt-2">Has aprobado la evaluación teórica y tu evidencia práctica fue validada.</p>
+                      </div>
+                    )}
+
+                    {user.role === 'instructor' && onResetProgress && isAlreadyCompleted && (
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={() => {
+                            if (existingEvidencia) {
+                              deleteEvidencia(existingEvidencia.id);
+                            }
+                            setAnswers({});
+                            setShowResults(false);
+                            onResetProgress(unit.id);
+                          }}
+                          className="px-6 py-2 border border-red-500/30 text-red-500 text-[10px] uppercase font-bold hover:bg-red-500/10 transition-colors"
+                        >
+                          🔄 Resetear progreso de este módulo (Instructor)
+                        </button>
                       </div>
                     )}
                   </div>

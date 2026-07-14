@@ -14,6 +14,7 @@ export interface Evidencia {
   fileUrl: string;
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: number;
+  rejectionReason?: string;
 }
 
 export interface User {

@@ -90,28 +90,29 @@ export function StudentDashboard({ user, onSelectUnit, onLogout, isInstructor, o
           <div className="grid gap-4">
             {courseData.map((unit, index) => {
               const isCompleted = user.progress.includes(unit.id);
+              const isLocked = index > 0 && !user.progress.includes(courseData[index - 1].id);
               return (
                 <button
                   key={unit.id}
-                  onClick={() => onSelectUnit(unit.id)}
-                  className="w-full text-left bg-dark-800 border border-gold-500/30 p-5 hover:border-gold-500 hover:bg-white/5 transition-all group flex items-start gap-4 relative overflow-hidden"
+                  onClick={() => !isLocked && onSelectUnit(unit.id)}
+                  disabled={isLocked}
+                  className={`w-full text-left bg-dark-800 border p-5 transition-all group flex items-start gap-4 relative overflow-hidden ${isLocked ? 'border-dark-600 opacity-50 cursor-not-allowed' : 'border-gold-500/30 hover:border-gold-500 hover:bg-white/5'}`}
                 >
                   {isCompleted && (
                     <div className="absolute top-0 right-0 p-4 opacity-50 pointer-events-none">
                        <CheckCircle className="w-24 h-24 text-gold-500" style={{ transform: 'translate(20%, -30%)' }} />
                     </div>
                   )}
-
-                  <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center border border-gold-500/30 text-[10px] text-gold-500 group-hover:border-gold-500 transition-colors">
+                  <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center border text-[10px] transition-colors ${isLocked ? 'border-dark-600 text-gray-500' : 'border-gold-500/30 text-gold-500 group-hover:border-gold-500'}`}>
                     {String(index + 1).padStart(2, '0')}
                   </div>
                   
                   <div className="flex-1 relative z-10">
-                    <div className="text-[10px] font-bold tracking-widest text-gold-500 mb-1 uppercase">Módulo {index + 1}</div>
-                    <h4 className={`text-xl font-display italic mb-2 ${isCompleted ? 'text-white' : 'text-gray-300'}`}>
+                    <div className={`text-[10px] font-bold tracking-widest mb-1 uppercase ${isLocked ? 'text-gray-500' : 'text-gold-500'}`}>Módulo {index + 1} {isLocked && '(Bloqueado)'}</div>
+                    <h4 className={`text-xl font-display italic mb-2 ${isCompleted ? 'text-white' : isLocked ? 'text-gray-500' : 'text-gray-300'}`}>
                       {unit.title}
                     </h4>
-                    <p className="text-xs text-gray-400 leading-relaxed max-w-xl">
+                    <p className={`text-xs leading-relaxed max-w-xl ${isLocked ? 'text-gray-600' : 'text-gray-400'}`}>
                       {unit.description}
                     </p>
                   </div>
