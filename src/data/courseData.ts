@@ -33,7 +33,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 1 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 1 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Quiénes inventaron los primeros cerrojos hace más de 4.000 años usando llaves de madera?",
@@ -113,7 +113,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 2 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 2 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Cuál es la herramienta más costosa e importante al iniciar en cerrajería?",
@@ -193,7 +193,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 3 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 3 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Cuáles son los tres tipos principales de cerraduras que describe el manual?",
@@ -273,7 +273,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 4 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 4 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿A qué altura del piso se debe instalar la cerradura por norma general?",
@@ -353,7 +353,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 5 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 5 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿En qué situación específica es más efectiva la técnica de la radiografía?",
@@ -433,7 +433,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 6 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 6 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Qué acción debe evitarse a toda costa cuando se rompe una llave dentro del bombín?",
@@ -513,7 +513,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Módulo 7 — 10 preguntas (mínimo 7 correctas para avanzar)",
+        title: "Evaluación Módulo 7 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Cómo se identifican las llaves de seguridad o 'llaves de puntos'?",
@@ -593,7 +593,7 @@ export const courseData: CourseUnit[] = [
       },
       {
         type: "quiz",
-        title: "Evaluación Final Módulo 8 — 10 preguntas (mínimo 7 correctas para graduarte)",
+        title: "Evaluación Final Módulo 8 — 10 preguntas (MÍNIMO 10 CORRECTAS — 100% REQUERIDO)",
         questions: [
           {
             question: "¿Es absolutamente necesario alquilar un local comercial para iniciar el negocio de cerrajería?",

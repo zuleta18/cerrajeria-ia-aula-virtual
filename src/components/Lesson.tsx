@@ -36,7 +36,7 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
 
   const allAnswered = quizBlock?.questions ? Object.keys(answers).length === quizBlock.questions.length : false;
   const correctCount = quizBlock?.questions ? quizBlock.questions.filter((q, idx) => answers[idx] === q.correctAnswerIndex).length : 0;
-  const isPassing = hasPassedQuizPreviously || (quizBlock?.questions ? correctCount >= Math.ceil(quizBlock.questions.length * 0.95) : false);
+  const isPassing = hasPassedQuizPreviously || (quizBlock?.questions ? correctCount === quizBlock.questions.length : false);
 
   const handleEvidenceUploaded = (fileUrl: string) => {
     addEvidencia({
@@ -168,7 +168,7 @@ export function Lesson({ unit, user, onBack, onComplete }: LessonProps) {
                         </span>
                         {!hasPassedQuizPreviously && (
                           <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
-                            Puntaje: {correctCount} / {quizBlock.questions.length} (Mínimo {Math.ceil(quizBlock.questions.length * 0.95)})
+                            Puntaje: {correctCount} / {quizBlock.questions.length} (Mínimo {quizBlock.questions.length})
                           </span>
                         )}
                       </div>
