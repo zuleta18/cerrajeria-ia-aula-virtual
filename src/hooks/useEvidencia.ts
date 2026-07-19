@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Evidencia } from '../types';
 import { db } from '../firebase';
-import { collection, doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 const EVIDENCIAS_KEY = 'cerrajeria_evidencias';
 
@@ -82,8 +82,6 @@ export function useEvidencia() {
 
   const deleteEvidencia = async (id: string) => {
     try {
-      // In a real app we'd import deleteDoc
-      const { deleteDoc } = await import('firebase/firestore');
       await deleteDoc(doc(db, 'evidencias', id));
     } catch (e) {
       console.error("Error deleting from Firestore, using local fallback", e);
